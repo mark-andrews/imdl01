@@ -70,9 +70,9 @@ Some of the tidyverse code that we will be using will be based on very recent ve
 
 ## Additional packages
 
-The primary package for machine learning tools that we will use is `mlr`.
+The primary package for machine learning tools that we will use is `mlr`, and we wil use a set of others too.
 ```r
-install.packages('mlr')
+install.packages(c('mlr', 'caret', 'mlbench', 'rpart.plot', 'randomForest', 'mclust', 'GGally', 'clue', 'clusterSim))
 ```
 
 ### Torch for deep learning
