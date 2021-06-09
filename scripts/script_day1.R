@@ -49,3 +49,63 @@ kfold_cv <- makeResampleDesc(method = 'RepCV',
                              folds = 10, 
                              reps = 10, 
                              stratify = TRUE)
+
+logRegKfold <- resample(logReg, 
+                        affairsTask, 
+                        resampling = kfold_cv,
+                        measures = list(acc, mmce, ppv, tpr, fpr, fdr, f1))
+
+logRegKfold$aggr
+
+
+# ROC and AUC -------------------------------------------------------------
+
+roc_df <- generateThreshVsPerfData(p, 
+                                   measures = list(fpr, tpr))
+plotROCCurves(roc_df)
+performance(p, measures = auc)
+
+
+# Digit classification using logistic classifier --------------------------
+
+mnist_df <- readRDS('data/mnist.Rds')
+
+
+# plot digits function ----------------------------------------------------
+
+
+plot_mnist <- function(data_df, rm_label = F){
+  plt <- data_df %>% pivot_longer(cols = starts_with('px__'),
+                                  names_to = c('x', 'y'),
+                                  names_pattern = 'px__([0-9]*)_([0-9]*)',
+                                  values_to = 'value') %>% 
+    mutate(across(c(x,y), as.numeric)) %>% 
+    ggplot(aes(x, y, fill = value)) +
+    geom_tile() +
+    facet_wrap(~ instance + label) +
+    scale_fill_gradient(low = 'black', high = 'white') 
+  
+  if (rm_label){
+    plt + theme(
+      strip.background = element_blank(),
+      strip.text.x = element_blank()
+    )
+  } else {
+    plt
+  }
+  
+}
+
+
+plot_mnist(mnist_df %>% sample_n(16))
+
+
+
+# Subsample the data frame to the 3 and 7 ---------------------------------
+
+mnist_df2 <- mnist_df %>%
+    filter(label %in% c(3, 7))
+
+X <- mnist_df2 %>% select(starts_with('px__')) %>% as.matrix()
+nzv <- caret::nearZeroVar(X)
+image(matrix(1:(28^2) %in% nzv, 28, 28))
